@@ -5,3 +5,6 @@ Resources
 *.tex
 *.png
 *.pkl
+.env
+.idea
+
