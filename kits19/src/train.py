@@ -30,7 +30,7 @@ class Trainer:
                 loss = self.loss(predict, target)
                 loss.backward()
                 self.optimizer.step()
-                self.loss_values.append(loss.data[0])
+                self.loss_values.append(loss.item())
                 print(">>> Last 10 batches loss: {}".format(np.mean(self.loss_values[-10:])))
             save_checkpoint(self.net, {"epoch": epoch}, "{}-{}".format(epoch, self.config["CHECKPOINT"]))
             print(">>>Trainer epoch finished")
