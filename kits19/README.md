@@ -20,3 +20,27 @@ Idea behind V1: Preprocess dataset and generate crops for each case. Because cas
 * Activate env
 * `python main_train.py --checkpoint unet.pth --epoches 5`
 
+
+### Running tensorboard
+```
+docker run -it -p 9000:9000 -v $(pwd)/runs:/runs tensorflow/tensorflow /bin/bash
+
+tensorboard --logdir=/runs/ --port=9000
+```
+
+## Port Forwarding
+```
+ssh -i ssh-keys/gpu-gc -L 9000:localhost:9000 sasha@34.74.74.127
+```
+
+
+# Screens
+```
+# Deattach screen
+(ctrl-a-d) 
+# Reattach screen
+screen -r 
+```
+
+
+
