@@ -17,6 +17,9 @@ Idea behind V1: Preprocess dataset and generate crops for each case. Because cas
 * Execute `h5_data_preparation` notebook and generate `crops.csv` and `crops.hdf5` file
 
 ### How to run training
+* `virtualenv --python=python3 .env`
+* `source .env/bin/activate`
+
 * Activate env
 * `python main_train.py --checkpoint unet.pth --epoches 5`
 
@@ -26,6 +29,11 @@ Idea behind V1: Preprocess dataset and generate crops for each case. Because cas
 docker run -it -p 9000:9000 -v $(pwd)/runs:/runs tensorflow/tensorflow /bin/bash
 
 tensorboard --logdir=/runs/ --port=9000
+
+#Or
+#Run this command from /project 
+
+docker run -d -p 9000:9000 -v $(pwd)/runs:/runs tensorflow/tensorflow /bin/bash -c "tensorboard --logdir=/runs/ --port=9000"
 ```
 
 ## Port Forwarding
