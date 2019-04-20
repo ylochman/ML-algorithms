@@ -4,7 +4,7 @@ import argparse
 import scipy.misc
 import numpy as np
 
-from starter_code.utils import load_case
+from src.starter.utils import load_case
 
 
 # Constants
