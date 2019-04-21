@@ -22,3 +22,14 @@ def score_function(prediction, ground_truth):
     tp, fp, fn = get_class_stats(2, cm)
     tumor_score = dice_score(tp, fp, fn)
     return (kidney_score + tumor_score) / 2
+
+
+def score_function_np(prediction, ground_truth):
+    pred_flat = prediction.flatten()
+    gt_flat = ground_truth.flatten()
+    cm = confusion_matrix(gt_flat, pred_flat, labels=[0, 1, 2])
+    tp, fp, fn = get_class_stats(1, cm)
+    kidney_score = dice_score(tp, fp, fn)
+    tp, fp, fn = get_class_stats(2, cm)
+    tumor_score = dice_score(tp, fp, fn)
+    return (kidney_score + tumor_score) / 2

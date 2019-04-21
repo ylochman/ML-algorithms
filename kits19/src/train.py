@@ -9,6 +9,8 @@ from tensorboardX import SummaryWriter
 from src.score import score_function
 from src.utils import save_checkpoint
 
+CHECKPOINT_STEP = 1000
+
 
 class Trainer:
     def __init__(self, net, config):
@@ -21,9 +23,9 @@ class Trainer:
         self.optimizer = torch.optim.Adam(net.parameters(), lr=config['LR'])
         self.tensorboard = SummaryWriter()
 
-    def run(self, dataloader, epochs=1):
+    def run(self, dataloader, epochs=1, start_epoch=-1):
         print(">> Running trainer")
-        for epoch in range(epochs):
+        for epoch in range(start_epoch + 1, start_epoch + epochs + 1):
             print(">>> Epoch %s" % epoch)
             for idx, (image, target) in enumerate(tqdm.tqdm(dataloader, ascii=True)):
                 image, target = image.to(self.device), target.to(self.device)
@@ -36,6 +38,9 @@ class Trainer:
                 loss.backward()
                 self.optimizer.step()
                 self.tensorboard.add_scalar("train_loss", loss.item())
+                if idx % CHECKPOINT_STEP == CHECKPOINT_STEP - 1:
+                    save_checkpoint(self.net, {"epoch": epoch}, "{}-{}".format(epoch, self.config["CHECKPOINT"]))
+
                 # self.tensorboard.add_scalar("train_score", score)
             save_checkpoint(self.net, {"epoch": epoch}, "{}-{}".format(epoch, self.config["CHECKPOINT"]))
             print(">>>Trainer epoch finished")
