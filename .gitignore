@@ -5,6 +5,9 @@ Resources
 *.tex
 *.png
 *.pkl
+images
+*.jpg
+*.png
 .env
 .idea
-
+__pycache__
