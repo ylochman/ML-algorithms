@@ -3,7 +3,8 @@
 ## Structure
 * src - source code
 * src/starter - provided starter code from [2019 KiTS Challenge Repository](https://github.com/neheller/kits19)
-* data - downloaded cases 
+* data - cases downloaded from [kits19/master/data](https://github.com/neheller/kits19/tree/master/data)
+* data_interpolated - cases downloaded from [kits19/interpolated/data](https://github.com/neheller/kits19/tree/interpolated/data)
 
 ## V1 
 Idea behind V1: Preprocess dataset and generate crops for each case. Because cases have different depth and have big size, the following pipeline is applied:
