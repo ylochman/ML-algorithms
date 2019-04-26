@@ -3,9 +3,10 @@ from pathlib import Path
 import nibabel as nib
 
 
-def load_case(cid):
+def load_case(cid, interpolated=False):
     # Resolve location where data should be living
-    data_path = Path(__file__).parent.parent.parent / "data"
+    data_path = Path(__file__).parent.parent.parent / "data" if not interpolated \
+                else Path(__file__).parent.parent.parent / "data_interpolated"
     if not data_path.exists():
         raise IOError(
             "Data path, {}, could not be resolved".format(str(data_path))

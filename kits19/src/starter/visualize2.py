@@ -56,9 +56,87 @@ def overlay(volume_ims, segmentation_ims, segmentation, alpha):
     return overlayed
 
 
+def overlayed_images(vol, seg, hu_min=DEFAULT_HU_MIN, hu_max=DEFAULT_HU_MAX, 
+    k_color=DEFAULT_KIDNEY_COLOR, t_color=DEFAULT_TUMOR_COLOR,
+    alpha=DEFAULT_OVERLAY_ALPHA, plane=DEFAULT_PLANE):
+    
+    plane = plane.lower()
+    plane_opts = ["axial", "coronal", "sagittal"]
+    if plane not in plane_opts:
+        raise ValueError((
+            "Plane \"{}\" not understood. " 
+            "Must be one of the following\n\n\t{}\n"
+        ).format(plane, plane_opts))
+    spacing = vol.affine
+    vol = vol.get_data()
+    seg = seg.get_data()
+    seg = seg.astype(np.int32)
+    
+    # Convert to a visual format
+    vol_ims = hu_to_grayscale(vol, hu_min, hu_max)
+    seg_ims = class_to_color(seg, k_color, t_color)
+
+    if plane == plane_opts[0]:
+        # Overlay the segmentation colors
+        viz_ims = overlay(vol_ims, seg_ims, seg, alpha)
+    if plane == plane_opts[1]:
+        # I use sum here to account for both legacy (incorrect) and 
+        # fixed affine matrices
+        spc_ratio = np.abs(np.sum(spacing[2,:]))/np.abs(np.sum(spacing[0,:]))
+        viz_ims = []
+        for i in range(vol_ims.shape[1]):
+            vol_im = scipy.misc.imresize(
+                vol_ims[:,i,:], (
+                    int(vol_ims.shape[0]*spc_ratio),
+                    int(vol_ims.shape[2])
+                ), interp="bicubic"
+            )
+            seg_im = scipy.misc.imresize(
+                seg_ims[:,i,:], (
+                    int(vol_ims.shape[0]*spc_ratio),
+                    int(vol_ims.shape[2])
+                ), interp="nearest"
+            )
+            sim = scipy.misc.imresize(
+                seg[:,i,:], (
+                    int(vol_ims.shape[0]*spc_ratio),
+                    int(vol_ims.shape[2])
+                ), interp="nearest"
+            )
+            viz_ims.append(overlay(vol_im, seg_im, sim, alpha))
+
+    if plane == plane_opts[2]:
+        # I use sum here to account for both legacy (incorrect) and 
+        # fixed affine matrices
+        spc_ratio = np.abs(np.sum(spacing[2,:]))/np.abs(np.sum(spacing[1,:]))
+        viz_ims = []
+        for i in range(vol_ims.shape[2]):
+            vol_im = scipy.misc.imresize(
+                vol_ims[:,:,i], (
+                    int(vol_ims.shape[0]*spc_ratio),
+                    int(vol_ims.shape[1])
+                ), interp="bicubic"
+            )
+            seg_im = scipy.misc.imresize(
+                seg_ims[:,:,i], (
+                    int(vol_ims.shape[0]*spc_ratio),
+                    int(vol_ims.shape[1])
+                ), interp="nearest"
+            )
+            sim = scipy.misc.imresize(
+                seg[:,:,i], (
+                    int(vol_ims.shape[0]*spc_ratio),
+                    int(vol_ims.shape[1])
+                ), interp="nearest"
+            )
+            viz_ims.append(overlay(vol_im, seg_im, sim, alpha))
+    return np.array(viz_ims)
+
+
+
 def visualize(cid, destination, hu_min=DEFAULT_HU_MIN, hu_max=DEFAULT_HU_MAX, 
     k_color=DEFAULT_KIDNEY_COLOR, t_color=DEFAULT_TUMOR_COLOR,
-    alpha=DEFAULT_OVERLAY_ALPHA, plane=DEFAULT_PLANE, save=False):
+    alpha=DEFAULT_OVERLAY_ALPHA, plane=DEFAULT_PLANE, interpolated=False, save=False):
 
     plane = plane.lower()
 
@@ -76,7 +154,7 @@ def visualize(cid, destination, hu_min=DEFAULT_HU_MIN, hu_max=DEFAULT_HU_MAX,
             out_path.mkdir()  
 
     # Load segmentation and volume
-    vol, seg = load_case(cid)
+    vol, seg = load_case(cid, interpolated=interpolated)
     spacing = vol.affine
     vol = vol.get_data()
     seg = seg.get_data()
