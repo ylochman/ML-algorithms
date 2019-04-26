@@ -1,13 +1,14 @@
 # KiTS 
 
 ## Structure
-* src - code
-* data - downloaded cases 
-* starter_code - provided code
+* src - source code
+* src/starter - provided starter code from [2019 KiTS Challenge Repository](https://github.com/neheller/kits19)
+* data - cases downloaded from [kits19/master/data](https://github.com/neheller/kits19/tree/master/data)
+* data_interpolated - cases downloaded from [kits19/interpolated/data](https://github.com/neheller/kits19/tree/interpolated/data)
 
 ## V1 
-Idea behind V1: Preprocess dataset and generate crops for each case. Because cases have are different depth and have big size, the following pipeline is applied:
-* Pick window size =64
+Idea behind V1: Preprocess dataset and generate crops for each case. Because cases have different depth and have big size, the following pipeline is applied:
+* Pick window size = 64
 * Pad depth for each case to have `depth % window_size == 0`
 * Generate positions for crops for each sample, with padding 32 and window size 64
 * Save crop positions and meta information to csv, save padded original samples to hdf5 file.
