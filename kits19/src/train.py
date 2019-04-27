@@ -21,7 +21,7 @@ class Trainer:
         self.device = config['DEVICE']
         self.net = net
         self.config = config
-        self.loss = nn.CrossEntropyLoss()
+        self.loss = nn.CrossEntropyLoss(weight=torch.FloatTensor([0.15, 1, 1]).to(config['DEVICE']))
         self.optimizer = torch.optim.Adam(net.parameters(), lr=config['LR'])
         self.tensorboard = SummaryWriter()
         self.limit = limit

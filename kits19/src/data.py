@@ -9,6 +9,7 @@ class H5CropData(torch.utils.data.Dataset):
         self.filename = filename
         self.crops = pd.read_csv(csv)
         self.crops = self.crops[self.crops.kid_size > 0]
+        # self.crops = self.crops[(self.crops.kid_size > 0) & (self.crops.case_id == 'case_00130')]
 
     def __len__(self):
         return len(self.crops)
