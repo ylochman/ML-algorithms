@@ -3,14 +3,14 @@ import torch.utils.data
 import pandas as pd
 import numpy as np
 from tensorboardX import SummaryWriter
-
+import time
 import src.starter.utils as starter
 import src.starter.visualize as vis
 import os
 import h5py
 import tqdm
 
-from src.score import score_function, score_function_np
+from src.score import score_function_fast
 
 
 class H5EvalCropData(torch.utils.data.Dataset):
@@ -47,25 +47,26 @@ def entries_count_mask(im_shape, crop_shape, positions):
 
 
 class Evaluator:
-    def __init__(self, net, config,
-                 eval_file="eval_out.hdf5",
-                 stats_csv="data_stats.csv"):
+    def __init__(self, net, config):
         net.eval()
         net.to(config['DEVICE'])
         self.device = config['DEVICE']
         self.net = net
         self.config = config
-        self.eval_file = eval_file
-        self.stats = pd.read_csv(stats_csv)
         self.scores = []
         self.tensorboard = SummaryWriter()
 
-    def run(self, cases,
+    def run(self, cases=None,
             crops_hdf_file="crops.hdf5",
             crops_csv_file="crops.csv",
             workers=0,
             batch_size=1,
-            score=False):
+            should_score=False,
+            eval_file=None):
+        if cases is None:
+            crops = pd.read_csv(crops_csv_file)
+            cases = crops.case_id.unique()
+
         with torch.no_grad():
             for case in tqdm.tqdm(cases):
                 # Read ground truth mask
@@ -87,10 +88,15 @@ class Evaluator:
 
                 # Mean all prediction by crops
                 result_mask = (result_mask / entries_mask)[-gt_mask.shape[0]:]
-                if score:
-                    predicted = torch.argmax(torch.softmax(torch.from_numpy(result_mask), 0), 0, keepdim=True).numpy()
-                    self.tensorboard.add_scalar("eval_score", score_function_np(predicted, gt_mask))
+                if should_score:
+                    tensor = torch.from_numpy(result_mask)
+                    tensor = torch.softmax(tensor, 0)
+                    tensor = torch.argmax(tensor, 0, keepdim=True)
+                    predicted = tensor.numpy()
+                    score = score_function_fast(predicted, gt_mask)
+                    self.tensorboard.add_scalar("eval_score", score)
 
-                pred_file = h5py.File(self.eval_file, "w")
-                pred_file.create_dataset(case, data=result_mask)
-                pred_file.close()
+                if eval_file is not None:
+                    pred_file = h5py.File(eval_file, "w")
+                    pred_file.create_dataset(case, data=result_mask)
+                    pred_file.close()

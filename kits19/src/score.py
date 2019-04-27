@@ -1,35 +1,32 @@
+from numba import jit
 from sklearn.metrics import confusion_matrix
 import numpy as np
+import time
 
 
+@jit(nopython=True)
 def dice_score(tp, fp, fn):
+    denom = tp + fp + fn
+    if denom == 0:
+        # todo very questionable
+        return 0
     return (2 * tp) / (2 * tp + fp + fn)
 
 
-def get_class_stats(target_class, cm):
-    tp = cm[target_class, target_class]
-    fp = np.sum(cm[:, target_class]) - tp
-    fn = np.sum(cm[target_class, :]) - tp
+@jit(nopython=True)
+def calculate_metrics(prediction, gt, target):
+    tp = np.sum(np.logical_and(prediction == target, gt == target))
+    fp = np.sum(np.logical_and(prediction == target, gt != target))
+    fn = np.sum(np.logical_and(prediction != target, gt == target))
     return (tp, fp, fn)
 
 
-def score_function(prediction, ground_truth):
-    pred_flat = prediction.view(-1)
-    gt_flat = ground_truth.view(-1)
-    cm = confusion_matrix(gt_flat, pred_flat, labels=[0, 1, 2])
-    tp, fp, fn = get_class_stats(1, cm)
-    kidney_score = dice_score(tp, fp, fn)
-    tp, fp, fn = get_class_stats(2, cm)
-    tumor_score = dice_score(tp, fp, fn)
-    return (kidney_score + tumor_score) / 2
-
-
-def score_function_np(prediction, ground_truth):
+@jit(nopython=True)
+def score_function_fast(prediction, ground_truth):
     pred_flat = prediction.flatten()
     gt_flat = ground_truth.flatten()
-    cm = confusion_matrix(gt_flat, pred_flat, labels=[0, 1, 2])
-    tp, fp, fn = get_class_stats(1, cm)
+    tp, fp, fn = calculate_metrics(pred_flat, gt_flat, 1)
     kidney_score = dice_score(tp, fp, fn)
-    tp, fp, fn = get_class_stats(2, cm)
+    tp, fp, fn = calculate_metrics(pred_flat, gt_flat, 2)
     tumor_score = dice_score(tp, fp, fn)
     return (kidney_score + tumor_score) / 2

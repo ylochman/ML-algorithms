@@ -1,3 +1,5 @@
+import itertools
+
 import torch
 import torch.nn as nn
 import torch.utils.data
@@ -6,14 +8,14 @@ import torch.functional as F
 import numpy as np
 from tensorboardX import SummaryWriter
 
-from src.score import score_function
+from src.score import score_function_fast
 from src.utils import save_checkpoint
 
-CHECKPOINT_STEP = 1000
+CHECKPOINT_STEP = 400
 
 
 class Trainer:
-    def __init__(self, net, config):
+    def __init__(self, net, config, limit=None):
         net.train()
         net.to(config['DEVICE'])
         self.device = config['DEVICE']
@@ -22,26 +24,30 @@ class Trainer:
         self.loss = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(net.parameters(), lr=config['LR'])
         self.tensorboard = SummaryWriter()
+        self.limit = limit
 
     def run(self, dataloader, epochs=1, start_epoch=-1):
         print(">> Running trainer")
         for epoch in range(start_epoch + 1, start_epoch + epochs + 1):
             print(">>> Epoch %s" % epoch)
             for idx, (image, target) in enumerate(tqdm.tqdm(dataloader, ascii=True)):
+                if self.limit is not None and idx % self.limit == self.limit - 1:
+                    break
                 image, target = image.to(self.device), target.to(self.device)
                 self.optimizer.zero_grad()
                 predict = self.net(image)
                 loss = self.loss(predict, target)
-                # todo Too slow. Increases training time from 2h -> 3.5h. Either move it to evaluation only or improve speed
-                # batch_prediction = torch.argmax(torch.softmax(predict.cpu(), 1), 1, keepdim=True)
-                # score = score_function(batch_prediction, target.cpu())
+                batch_prediction = torch.argmax(torch.softmax(predict.cpu(), 1), 1, keepdim=True)
+                score = score_function_fast(batch_prediction.numpy(), target.cpu().numpy())
+
                 loss.backward()
                 self.optimizer.step()
                 self.tensorboard.add_scalar("train_loss", loss.item())
+                self.tensorboard.add_scalar("train_score", score)
+
                 if idx % CHECKPOINT_STEP == CHECKPOINT_STEP - 1:
                     save_checkpoint(self.net, {"epoch": epoch}, "{}-{}".format(epoch, self.config["CHECKPOINT"]))
 
-                # self.tensorboard.add_scalar("train_score", score)
             save_checkpoint(self.net, {"epoch": epoch}, "{}-{}".format(epoch, self.config["CHECKPOINT"]))
             print(">>>Trainer epoch finished")
         print(">> Completed")

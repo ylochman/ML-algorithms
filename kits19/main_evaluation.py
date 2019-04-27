@@ -29,7 +29,7 @@ crops = pd.read_csv("crops.csv")
 cases = crops.case_id.unique()
 
 evaluator = Evaluator(net, config)
-evaluator.run(["case_00004"], workers=args.workers, batch_size=args.batch, score=args.score)
+evaluator.run(["case_00004"], workers=args.workers, batch_size=args.batch, should_score=args.score)
 
 
 
