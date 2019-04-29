@@ -1,4 +1,5 @@
 import torch.utils.data
+from tensorboardX import SummaryWriter
 
 from src.config import config
 from src.data import H5CropData
@@ -31,11 +32,11 @@ else:
 train_data = H5CropData("train_interpolated_crops.hdf5", "train_interpolated_crops.csv")
 train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch, num_workers=args.workers, shuffle=True)
 
-trainer = Trainer(net, config, limit=2000)
-evaluator = Evaluator(net, config)
+tensorboard = SummaryWriter()
+trainer = Trainer(net, config, limit=2000, writer=tensorboard)
+evaluator = Evaluator(net, config, writer=tensorboard)
 
 for epoch in range(args.epochs):
     trainer.run(train_loader, epochs=1, start_epoch=extra['epoch'] + epoch)
-    if epoch > 1:
-        evaluator.run(crops_csv_file="val_interpolated_crops.csv", crops_hdf_file="val_interpolated_crops.hdf5",
+    evaluator.run(crops_csv_file="val_interpolated_crops.csv", crops_hdf_file="val_interpolated_crops.hdf5",
                       workers=args.workers, batch_size=args.evalbatch, should_score=args.score, eval_file=None)

@@ -11,11 +11,11 @@ import pandas as pd
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--batch", help="Number of epochs to train", type=int, default=1)
+parser.add_argument("--evalbatch", help="Number of epochs to train", type=int, default=1)
 parser.add_argument("--workers", help="Checkpoint name", type=int, default=6)
 
 parser.add_argument("--checkpoint", help="Checkpoint name", type=str, default=None)
-parser.add_argument("--score", help="Checkpoint name", type=bool, default=False)
+parser.add_argument("--score", help="Checkpoint name", type=bool, default=True)
 
 args = parser.parse_args()
 print("Arguments: {}".format(args))
@@ -25,11 +25,7 @@ net = UNet3D(1, 3, False)
 if args.checkpoint is not None:
     extra = load_checkpoint(net, args.checkpoint)
 
-crops = pd.read_csv("crops.csv")
-cases = crops.case_id.unique()
-
 evaluator = Evaluator(net, config)
-evaluator.run(["case_00004"], workers=args.workers, batch_size=args.batch, should_score=args.score)
 
-
-
+evaluator.run(crops_csv_file="val_interpolated_crops.csv", crops_hdf_file="val_interpolated_crops.hdf5",
+              workers=args.workers, batch_size=args.evalbatch, should_score=args.score, eval_file=None)

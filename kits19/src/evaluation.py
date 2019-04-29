@@ -47,14 +47,17 @@ def entries_count_mask(im_shape, crop_shape, positions):
 
 
 class Evaluator:
-    def __init__(self, net, config):
+    def __init__(self, net, config, writer=None):
         net.eval()
         net.to(config['DEVICE'])
         self.device = config['DEVICE']
         self.net = net
         self.config = config
         self.scores = []
-        self.tensorboard = SummaryWriter()
+        if writer is None:
+            self.tensorboard = SummaryWriter()
+        else:
+            self.tensorboard = writer
 
     def run(self, cases=None,
             crops_hdf_file="crops.hdf5",
@@ -94,7 +97,7 @@ class Evaluator:
                     tensor = torch.argmax(tensor, 0, keepdim=True)
                     predicted = tensor.numpy()
                     score = score_function_fast(predicted, gt_mask)
-                    self.tensorboard.add_scalar("eval_score", score)
+                    self.tensorboard.add_scalar("val_score", score)
 
                 if eval_file is not None:
                     pred_file = h5py.File(eval_file, "w")

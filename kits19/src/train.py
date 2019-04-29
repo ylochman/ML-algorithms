@@ -15,7 +15,7 @@ CHECKPOINT_STEP = 400
 
 
 class Trainer:
-    def __init__(self, net, config, limit=None):
+    def __init__(self, net, config, limit=None, writer=None):
         net.train()
         net.to(config['DEVICE'])
         self.device = config['DEVICE']
@@ -23,7 +23,10 @@ class Trainer:
         self.config = config
         self.loss = nn.CrossEntropyLoss(weight=torch.FloatTensor([0.15, 1, 1]).to(config['DEVICE']))
         self.optimizer = torch.optim.Adam(net.parameters(), lr=config['LR'])
-        self.tensorboard = SummaryWriter()
+        if writer is None:
+            self.tensorboard = SummaryWriter()
+        else:
+            self.tensorboard = writer
         self.limit = limit
 
     def run(self, dataloader, epochs=1, start_epoch=-1):
