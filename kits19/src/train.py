@@ -8,6 +8,7 @@ import torch.functional as F
 import numpy as np
 from tensorboardX import SummaryWriter
 
+from src.losses import SoftDiceLoss
 from src.score import score_function_fast
 from src.utils import save_checkpoint
 
@@ -22,6 +23,7 @@ class Trainer:
         self.net = net
         self.config = config
         self.loss = nn.CrossEntropyLoss(weight=torch.FloatTensor([0.15, 1, 1]).to(config['DEVICE']))
+        # self.loss = SoftDiceLoss(n_classes=3)
         self.optimizer = torch.optim.Adam(net.parameters(), lr=config['LR'])
         if writer is None:
             self.tensorboard = SummaryWriter()

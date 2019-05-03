@@ -6,6 +6,7 @@ from src.data import H5CropData
 from src.evaluation import Evaluator
 from src.train import Trainer
 from src.unet import UNet3D
+from src.unet_dsv import unet_CT_multi_att_dsv_3D, unet_CT_dsv_3D, unet_grid_attention_3D
 from src.utils import load_checkpoint
 import pandas as pd
 
@@ -18,12 +19,19 @@ parser.add_argument("--evalbatch", help="Size of eval batch", type=int, default=
 parser.add_argument("--workers", help="Number of workers", type=int, default=6)
 parser.add_argument("--checkpoint", help="Checkpoint name", type=str, default=None)
 parser.add_argument("--score", help="Should calculate score", type=bool, default=True)
+parser.add_argument("--net", help="Neural network", type=str, default="3dunet")
 
 args = parser.parse_args()
 print("Arguments: {}".format(args))
 print("Config: {}".format(config))
 
-net = UNet3D(1, 3, False)
+if args.net == '3dunet':
+    net = UNet3D(1, 3, False)
+elif args.net == '3ddsv':
+    net = unet_grid_attention_3D(n_classes=3, in_channels=1)
+else:
+    raise NotImplementedError()
+
 if args.checkpoint is not None:
     extra = load_checkpoint(net, args.checkpoint)
 else:
@@ -39,4 +47,4 @@ evaluator = Evaluator(net, config, writer=tensorboard)
 for epoch in range(args.epochs):
     trainer.run(train_loader, epochs=1, start_epoch=extra['epoch'] + epoch)
     evaluator.run(crops_csv_file="val_interpolated_crops.csv", crops_hdf_file="val_interpolated_crops.hdf5",
-                      workers=args.workers, batch_size=args.evalbatch, should_score=args.score, eval_file=None)
+                  workers=args.workers, batch_size=args.evalbatch, should_score=args.score, eval_file=None)

@@ -8,6 +8,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from src.utils import count_parameters
+
 
 class UNet3D(nn.Module):
     """
@@ -496,8 +498,10 @@ class EndToEndDTUNet3D(nn.Module):
         x = self.tags_net(x)
         return self.dt_net(x)
 
+
 if __name__ == '__main__':
     vnet = UNet3D(in_channels=1, out_channels=2, final_sigmoid=False)
+    print("Param count: {}".format(count_parameters(vnet)))
     input = torch.zeros((1, 1, 64, 64, 64))
     out = vnet(input)
     print(out.shape)

@@ -100,6 +100,6 @@ class Evaluator:
                     self.tensorboard.add_scalar("val_score", score)
 
                 if eval_file is not None:
-                    pred_file = h5py.File(eval_file, "w")
+                    pred_file = h5py.File(eval_file, "a")
                     pred_file.create_dataset(case, data=result_mask)
                     pred_file.close()

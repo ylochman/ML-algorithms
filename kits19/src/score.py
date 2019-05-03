@@ -8,8 +8,7 @@ import time
 def dice_score(tp, fp, fn):
     denom = tp + fp + fn
     if denom == 0:
-        # todo very questionable
-        return 0
+        return None
     return (2 * tp) / (2 * tp + fp + fn)
 
 
@@ -29,4 +28,12 @@ def score_function_fast(prediction, ground_truth):
     kidney_score = dice_score(tp, fp, fn)
     tp, fp, fn = calculate_metrics(pred_flat, gt_flat, 2)
     tumor_score = dice_score(tp, fp, fn)
-    return (kidney_score + tumor_score) / 2
+
+    if kidney_score is None and tumor_score is None:
+        return 1
+    elif kidney_score is None:
+        return tumor_score
+    elif tumor_score is None:
+        return kidney_score
+    else:
+        return (kidney_score + tumor_score) / 2
