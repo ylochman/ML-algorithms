@@ -67,9 +67,16 @@ def overlayed_images(vol, seg, hu_min=DEFAULT_HU_MIN, hu_max=DEFAULT_HU_MAX,
             "Plane \"{}\" not understood. " 
             "Must be one of the following\n\n\t{}\n"
         ).format(plane, plane_opts))
-    spacing = vol.affine
-    vol = vol.get_data()
-    seg = seg.get_data()
+        
+    if isinstance(vol, (np.ndarray, np.generic)):
+        spacing = np.array([[ 0.        ,  0.        , -0.78162497,  0.        ],
+                            [ 0.        , -0.78162497,  0.        ,  0.        ],
+                            [-3.        ,  0.        ,  0.        ,  0.        ],
+                            [ 0.        ,  0.        ,  0.        ,  1.        ]])
+    else:
+        spacing = vol.affine
+        vol = vol.get_data()
+        seg = seg.get_data()
     seg = seg.astype(np.int32)
     
     # Convert to a visual format
@@ -82,7 +89,7 @@ def overlayed_images(vol, seg, hu_min=DEFAULT_HU_MIN, hu_max=DEFAULT_HU_MAX,
     if plane == plane_opts[1]:
         # I use sum here to account for both legacy (incorrect) and 
         # fixed affine matrices
-        spc_ratio = np.abs(np.sum(spacing[2,:]))/np.abs(np.sum(spacing[0,:]))
+        spc_ratio = np.abs(np.sum(spacing[2,:]))/np.abs(np.sum(spacing[0,:])) #3.8381578316260803
         viz_ims = []
         for i in range(vol_ims.shape[1]):
             vol_im = scipy.misc.imresize(
