@@ -29,9 +29,12 @@ class H5CropData(torch.utils.data.Dataset):
 class H5CropData2(torch.utils.data.Dataset):
     def __init__(self, hdf5file, csvfile):
         self.filename = hdf5file
-        self.crops = pd.read_csv(csvfile)
-#         self.crops = self.crops[self.crops.kid_size > 0]
-        
+        crops = pd.read_csv(csvfile)
+        non_empty = crops[crops.kid_size > 0]
+        empty = crops[crops.kid_size == 0]
+        empty = empty.sample(int(len(non_empty) * 0.2))
+        self.crops = pd.concat([non_empty, empty])
+
     def __len__(self):
         return len(self.crops)
 

@@ -40,8 +40,6 @@ class Trainer:
         for epoch in range(start_epoch + 1, start_epoch + epochs + 1):
             print(">>> Epoch %s" % epoch)
             for idx, (image, target) in enumerate(tqdm.tqdm(dataloader, ascii=True)):
-                if self.limit is not None and idx % self.limit == self.limit - 1:
-                    break
                 image, target = image.to(self.device), target.to(self.device)
                 self.optimizer.zero_grad()
                 predict = self.net(image)
