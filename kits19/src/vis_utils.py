@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 
 def show_slices(overlayed_volume, columns=3, figsize=(50, 50)):
@@ -10,7 +11,7 @@ def show_slices(overlayed_volume, columns=3, figsize=(50, 50)):
         slice = overlayed_volume[i, :, :, :]
         axes[row][column].imshow(slice)
 
-def multi_slice_viewer(volume, first_index=0):
+def multi_slice_viewer(volume, first_index=0, cmap=None):
     """ Function to display image slices with ability to scroll them accross the depth
         > press K to view next slice
         > press J to view previous slice
@@ -19,7 +20,7 @@ def multi_slice_viewer(volume, first_index=0):
     fig, ax = plt.subplots()
     ax.volume = volume
     ax.index = first_index#volume.shape[0] // 2
-    ax.imshow(volume[ax.index])
+    ax.imshow(volume[ax.index], cmap=cmap)
     ax.set_title('slice {}'.format(ax.index))
     fig.canvas.mpl_connect('key_press_event', process_key)
         
@@ -51,3 +52,26 @@ def next_slice(ax):
     ax.index = (ax.index + 1) % volume.shape[0]
     ax.images[0].set_array(volume[ax.index])
     ax.set_title('slice {}'.format(ax.index))
+    
+
+    
+def find_first_kidney_slice(mask, plane='axial', with_last=False):
+    plane_opts = ["axial", "coronal", "sagittal"]
+    if plane not in plane_opts:
+        raise ValueError((
+            "Plane \"{}\" not understood. " 
+            "Must be one of the following\n\n\t{}\n"
+        ).format(plane, plane_opts))
+    if not isinstance(mask, (np.ndarray, np.generic)):
+        mask = mask.get_data()
+    if plane == plane_opts[1]:
+        mask = mask.transpose(1,0,2)
+    if plane == plane_opts[2]:
+        mask = mask.transpose(2,0,1)
+    first_index = np.where(mask.sum(axis=(1,2))>0)[0][0]
+    if not with_last:
+        return first_index
+    else:
+        mask = np.flipud(mask)
+        last_index = len(mask) - 1 - np.where(mask.sum(axis=(1,2))>0)[0][0]
+        return first_index, last_index
