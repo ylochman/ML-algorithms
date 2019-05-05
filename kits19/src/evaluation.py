@@ -54,6 +54,8 @@ class Evaluator:
         self.net = net
         self.config = config
         self.scores = []
+        self.global_step = 0
+        self.epoch_number = 0
         if writer is None:
             self.tensorboard = SummaryWriter()
         else:
@@ -70,6 +72,7 @@ class Evaluator:
             crops = pd.read_csv(crops_csv_file)
             cases = crops.case_id.unique()
 
+        self.scores.clear()
         with torch.no_grad():
             for case in tqdm.tqdm(cases):
                 # Read ground truth mask
@@ -97,9 +100,13 @@ class Evaluator:
                     tensor = torch.argmax(tensor, 0, keepdim=True)
                     predicted = tensor.numpy()
                     score = score_function_fast(predicted, gt_mask)
-                    self.tensorboard.add_scalar("val_score", score)
+                    self.scores.append(score)
+                    self.tensorboard.add_scalar("val_score", score, global_step=self.global_step)
 
                 if eval_file is not None:
                     pred_file = h5py.File(eval_file, "a")
                     pred_file.create_dataset(case, data=result_mask)
                     pred_file.close()
+                self.global_step += 1
+            self.tensorboard.add_scalar("val_epoch_score", np.mean(self.scores), global_step=self.epoch_number)
+            self.epoch_number += 1

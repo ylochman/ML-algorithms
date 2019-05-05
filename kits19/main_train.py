@@ -1,13 +1,11 @@
+import argparse
+
 import torch.utils.data
 
 from src.config import config
 from src.data import H5CropData
 from src.train import Trainer
-from src.unet import UNet3D
-from src.unet_dsv import unet_CT_multi_att_dsv_3D
-from src.utils import load_checkpoint
-
-import argparse
+from src.utils import load_checkpoint, build_network
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--epochs", help="Number of epochs to train", type=int, default=1)
@@ -20,13 +18,8 @@ args = parser.parse_args()
 print("Arguments: {}".format(args))
 print("Config: {}".format(config))
 
-if args.net == '3dunet':
-    net = UNet3D(1, 3, False)
-elif args.net == '3ddsv':
-    net = unet_CT_multi_att_dsv_3D(n_classes=3, in_channels=1)
-else:
-    raise NotImplementedError()
 
+net = build_network(args.net)
 if args.checkpoint is not None:
     extra = load_checkpoint(net, args.checkpoint)
 
