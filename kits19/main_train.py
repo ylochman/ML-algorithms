@@ -4,8 +4,9 @@ import torch.utils.data
 
 from src.config import config
 from src.data import H5CropData
+from src.net import build_network
 from src.train import Trainer
-from src.utils import load_checkpoint, build_network
+from src.utils import load_checkpoint
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--epochs", help="Number of epochs to train", type=int, default=1)

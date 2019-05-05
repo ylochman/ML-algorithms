@@ -2,7 +2,8 @@ import argparse
 
 from src.config import config
 from src.evaluation import Evaluator
-from src.utils import load_checkpoint, build_network
+from src.net import build_network
+from src.utils import load_checkpoint
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--evalbatch", help="Number of epochs to train", type=int, default=1)

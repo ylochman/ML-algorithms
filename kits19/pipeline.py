@@ -6,8 +6,9 @@ from tensorboardX import SummaryWriter
 from src.config import config
 from src.data import H5CropData, H5CropData2
 from src.evaluation import Evaluator
+from src.net import build_network
 from src.train import Trainer
-from src.utils import load_checkpoint, build_network
+from src.utils import load_checkpoint
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--epochs", help="Number of epochs to train", type=int, default=1)
@@ -36,6 +37,6 @@ trainer = Trainer(net, config, writer=tensorboard)
 evaluator = Evaluator(net, config, writer=tensorboard)
 
 for epoch in range(args.epochs):
-    # trainer.run(train_loader, epochs=1, start_epoch=extra['epoch'] + epoch)
+    trainer.run(train_loader, epochs=1, start_epoch=extra['epoch'] + epoch)
     evaluator.run(crops_csv_file="data_ready/val_128_128_32.csv", crops_hdf_file="data_ready/val_128_128_32.hdf5",
                   workers=args.workers, batch_size=args.evalbatch, should_score=args.score, eval_file=None)

@@ -19,7 +19,8 @@ class H5EvalCropData(torch.utils.data.Dataset):
         self.crops = pd.read_csv(csv)
         self.cases = self.crops.case_id.unique()
         self.case = case
-        self.window = self.crops[self.crops.case_id == case].iloc[0].window
+        self.window = eval(self.crops[self.crops.case_id == case].iloc[0].window_size)
+
         self.positions = [eval(pos) for pos in self.crops[self.crops.case_id == case].position.values]
 
     def __len__(self):
@@ -27,9 +28,9 @@ class H5EvalCropData(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         z, x, y = self.positions[idx]
-        window = self.window
+        zw, yw, xw = self.window
         self.file = h5py.File(self.filename, "r")
-        dat = self.file[self.case][:, z:z + window, x:x + window, y:y + window]
+        dat = self.file[self.case][:, z:z + zw, x:x + xw, y:y + yw]
         self.file.close()
         im = dat[0, :, :, :]
         mask = dat[1, :, :, :]
@@ -82,13 +83,13 @@ class Evaluator:
                 # Create empty result mask
                 result_mask = np.zeros((3, *gt_mask.shape))
                 dataset = H5EvalCropData(crops_hdf_file, crops_csv_file, case)
-                entries_mask = entries_count_mask(gt_mask.shape, self.config['WINDOW'], dataset.positions)
+                entries_mask = entries_count_mask(gt_mask.shape, dataset.window, dataset.positions)
                 loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, num_workers=workers)
                 # Iterate over all crops and sum to the result mask
                 for idx, (positions, image, target) in enumerate(tqdm.tqdm(loader, ascii=True)):
                     image, target = image.to(self.device), target.to(self.device)
                     predict = self.net(image)
-                    z_window, x_window, y_window = self.config['WINDOW']
+                    z_window, x_window, y_window = dataset.window
                     for batch_item in range(positions.shape[0]):
                         z, x, y = positions[batch_item].numpy()
                         result_mask[:, z:z + z_window, x:x + x_window, y:y + y_window] += predict[batch_item].cpu().numpy()
