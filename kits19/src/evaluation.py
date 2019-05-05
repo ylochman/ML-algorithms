@@ -82,15 +82,16 @@ class Evaluator:
                 # Create empty result mask
                 result_mask = np.zeros((3, *gt_mask.shape))
                 dataset = H5EvalCropData(crops_hdf_file, crops_csv_file, case)
-                entries_mask = entries_count_mask(gt_mask.shape, (64, 64, 64), dataset.positions)
+                entries_mask = entries_count_mask(gt_mask.shape, self.config['WINDOW'], dataset.positions)
                 loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, num_workers=workers)
                 # Iterate over all crops and sum to the result mask
                 for idx, (positions, image, target) in enumerate(tqdm.tqdm(loader, ascii=True)):
                     image, target = image.to(self.device), target.to(self.device)
                     predict = self.net(image)
+                    z_window, x_window, y_window = self.config['WINDOW']
                     for batch_item in range(positions.shape[0]):
                         z, x, y = positions[batch_item].numpy()
-                        result_mask[:, z:z + 64, x:x + 64, y:y + 64] += predict[batch_item].cpu().numpy()
+                        result_mask[:, z:z + z_window, x:x + x_window, y:y + y_window] += predict[batch_item].cpu().numpy()
 
                 # Mean all prediction by crops
                 result_mask = (result_mask / entries_mask)[-gt_mask.shape[0]:]
