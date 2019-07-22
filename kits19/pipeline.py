@@ -2,6 +2,7 @@ import argparse
 
 import torch.utils.data
 from tensorboardX import SummaryWriter
+from torch.utils.data.dataloader import default_collate
 
 from src.config import config
 from src.data import H5CropData, H5CropData2
@@ -29,8 +30,16 @@ if args.checkpoint is not None:
 else:
     extra = {'epoch': 0}
 
+
+def safe_collate(batch):
+    "Puts each data field into a tensor with outer dimension batch size"
+    batch = list(filter(lambda x: x is not None, batch))
+    return default_collate(batch)
+
+
 train_data = H5CropData2("data_ready/train_128_128_32.hdf5", "data_ready/train_128_128_32.csv")
-train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch, num_workers=args.workers, shuffle=True)
+train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch, num_workers=args.workers, shuffle=True,
+                                           collate_fn=safe_collate)
 
 tensorboard = SummaryWriter()
 trainer = Trainer(net, config, writer=tensorboard)

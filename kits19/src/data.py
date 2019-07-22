@@ -26,6 +26,7 @@ class H5CropData(torch.utils.data.Dataset):
         mask = dat[1, :, :, :]
         return torch.from_numpy(im).unsqueeze(0).float(), torch.from_numpy(mask).long()
 
+
 class H5CropData2(torch.utils.data.Dataset):
     def __init__(self, hdf5file, csvfile):
         self.filename = hdf5file
@@ -44,8 +45,11 @@ class H5CropData2(torch.utils.data.Dataset):
         z, y, x = eval(row.position)
         zw, yw, xw = eval(row.window_size)
         self.file = h5py.File(self.filename, "r")
-        data = self.file[case_id][:, z:z+zw, y:y+yw, x:x+xw]
+        data = self.file[case_id][:, z:z + zw, y:y + yw, x:x + xw]
         self.file.close()
         im = data[0, :, :, :]
         mask = data[1, :, :, :]
-        return torch.from_numpy(im).unsqueeze(0).float(), torch.from_numpy(mask).long()
+        try:
+            return torch.from_numpy(im).unsqueeze(0).float(), torch.from_numpy(mask).long()
+        except Exception as e:
+            print("Exception happened. Data shape: {}".format(data.shape))
