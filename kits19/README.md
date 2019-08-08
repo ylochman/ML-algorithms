@@ -13,8 +13,8 @@ See our [project report](./report/final-paper.pdf)
 * Pipeline files:
 	* `./prepare_data.py`
 	* `./pipeline.py`
-  * `./main_evaluation.py'
-  * `./main_train.py`
+	* `./main_evaluation.py`
+	* `./main_train.py`
 
 ## To reproduce results..
 
