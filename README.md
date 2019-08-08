@@ -1,4 +1,4 @@
-# Machine Learning coursework | Applied Sciences Faculty, UCU (2019)
+# Machine Learning coursework
 
 ## Module 2. Supervised learning
 * [CIFAR-10 classification with AlexNet](./Assignment-2/programming/alexnet-cifar)
