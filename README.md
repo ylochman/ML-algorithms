@@ -1,6 +1,8 @@
 # Machine Learning coursework
 
-## Module 2. Supervised learning
+## Module 1-2. Supervised learning
+* [Weighted linear regression for salary prediction](./Assignment-1/programming/dou-salaries)
+* [Naive Bayes spam classifier](./Assignment-1/programming/spamassassin)
 * [CIFAR-10 classification with AlexNet](./Assignment-2/programming/alexnet-cifar)
 * [Indoor Localization](./Assignment-2/programming/indoor-localization)
 
