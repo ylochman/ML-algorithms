@@ -1,55 +1,61 @@
-# KiTS 
+# Kidney Tumor Segmentation Challenge 2019
 
-## Structure
-* src - source code
-* src/starter - provided starter code from [2019 KiTS Challenge Repository](https://github.com/neheller/kits19)
-* data - cases downloaded from [kits19/master/data](https://github.com/neheller/kits19/tree/master/data)
-* data_interpolated - cases downloaded from [kits19/interpolated/data](https://github.com/neheller/kits19/tree/interpolated/data)
+See our [project report](./report/final-paper.pdf)
 
-## V1 
-Idea behind V1: Preprocess dataset and generate crops for each case. Because cases have different depth and have big size, the following pipeline is applied:
-* Pick window size = 64
-* Pad depth for each case to have `depth % window_size == 0`
-* Generate positions for crops for each sample, with padding 32 and window size 64
-* Save crop positions and meta information to csv, save padded original samples to hdf5 file.
-### Preparing data
-* Download data to data/ folder
-* Execute `data_exploration` notebook and generate `data_stats.csv`
-* Execute `h5_data_preparation` notebook and generate `crops.csv` and `crops.hdf5` file
+## Project structure
+* `./src` - source code
+* `./src/starter` - provided starter code from [2019 KiTS Challenge Repository](https://github.com/neheller/kits19)
+* `./data` - cases downloaded from [kits19/master/data](https://github.com/neheller/kits19/tree/master/data)
+* `./data_interpolated` - cases downloaded from [kits19/interpolated/data](https://github.com/neheller/kits19/tree/interpolated/data)
+* `./report` - project presentations and report
+* `./*.ipynb` - various research notebooks
+* `./*.csv` - various data statistics files
+* Pipeline files:
+	* `./prepare_data.py`
+	* `./pipeline.py`
+	* `./main_evaluation.py`
+	* `./main_train.py`
 
-### How to run training
-* `virtualenv --python=python3 .env`
-* `source .env/bin/activate`
+## To reproduce results..
 
-* Activate env
-* `python main_train.py --checkpoint unet.pth --epoches 5`
+### Prepare data
+* [Download](https://github.com/neheller/kits19/tree/interpolated/data) data to `./data_interpolated` (*Old: [Download](https://github.com/neheller/kits19/tree/master/data) data to `./data`*)
+* Execute `data_exploration` notebook -- generate `data_stats.csv`
+* Execute `h5_data_preparation` notebook -- generate `crops.csv` and `crops.hdf5` file
 
-
-### Running tensorboard
+### Prepare an environment
+```bash
+virtualenv --python=python3 .env
+source .env/bin/activate
+pip install requirements.txt
 ```
+
+### Run training
+```bash
+python main_train.py --checkpoint unet.pth
+```
+
+## Technical Details
+
+### Run Tensorboard
+```bash
 docker run -it -p 9000:9000 -v $(pwd)/runs:/runs tensorflow/tensorflow /bin/bash
-
 tensorboard --logdir=/runs/ --port=9000
-
-#Or
-#Run this command from /project 
-
+```
+or run this command from `./project`:
+```bash
 docker run -d -p 9000:9000 -v $(pwd)/runs:/runs tensorflow/tensorflow /bin/bash -c "tensorboard --logdir=/runs/ --port=9000"
 ```
 
-## Port Forwarding
-```
+### Port forwarding
+```bash
 ssh -i ssh-keys/gpu-gc -L 9000:localhost:9000 sasha@34.74.74.127
 ```
 
-
-# Screens
-```
+### Use Screen
+```bash
 # Deattach screen
 (ctrl-a-d) 
 # Reattach screen
 screen -r 
 ```
-
-
-
